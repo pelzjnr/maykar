@@ -8,21 +8,27 @@ export default function Generator() {
   const [generating, setGenerating] = useState(false);
   const [results, setResults] = useState<string[]>([]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) return;
     setGenerating(true);
     setResults([]);
-    
-    // mock generation - replace with ai api later
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, aspectRatio }),
+      });
+
+      const data = await res.json();
+      if (data.images) {
+        setResults(data.images.map((img: any) => img.url));
+      }
+    } catch (error) {
+      console.error("Generation failed:", error);
+    } finally {
       setGenerating(false);
-      setResults([
-        "/placeholder.png",
-        "/placeholder.png",
-        "/placeholder.png",
-        "/placeholder.png",
-      ]);
-    }, 3000);
+    }
   };
 
   return (
@@ -110,8 +116,19 @@ export default function Generator() {
             <h2 className="font-mono text-lg font-bold mb-4">your thumbnails</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {results.map((src, i) => (
-                <div key={i} className="aspect-video bg-gray-200 border border-gray-300 flex items-center justify-center">
-                  <span className="font-mono text-sm text-gray-500">thumbnail {i + 1}</span>
+                <div key={i} className="aspect-video bg-gray-200 border border-gray-300 relative group overflow-hidden">
+                  <img
+                    src={src}
+                    alt={`Generated thumbnail ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <a
+                    href={src}
+                    download={`thumbnail-${i + 1}.png`}
+                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <span className="font-mono text-sm text-white">download</span>
+                  </a>
                 </div>
               ))}
             </div>
