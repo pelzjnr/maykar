@@ -6,7 +6,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        orange: '#ff4d00',
+        orange: '#ff0000',
       },
       fontFamily: {
         display: ['var(--font-playfair)', 'serif'],
